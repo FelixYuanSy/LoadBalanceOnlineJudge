@@ -68,5 +68,5 @@ namespace ns_runner
                 return status & 0x7F;
             }
         }
-    }
+    };
 }
