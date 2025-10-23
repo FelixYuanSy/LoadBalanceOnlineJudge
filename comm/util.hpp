@@ -2,6 +2,7 @@
 #include <iostream>
 #include <sys/stat.h>
 #include <sys/time.h>
+#include <atomic>
 
 namespace ns_util
 {
@@ -52,6 +53,27 @@ namespace ns_util
             }
             return false;
         }
+        static std::string UniqueFile()
+        {
+            //在时间工具里增加读取毫秒
+            //原子加锁
+            //读取毫秒
+            static std::atomic_uint id(0);
+            id++;
+            std::string ms_time = TimeUtil::GetMsTime();
+            return ms_time + "_" + std::to_string(id);
+
+
+        }
+        static bool WriteFile(const std::string &file_name, const std::string &content)
+        {
+            std::ofstream out(file_name);
+            if(!out.is_open())
+                return false;
+            out.write(content.c_str(),content.size());
+            out.close();
+            return true;
+        }     
     };
     class TimeUtil
     {
@@ -62,5 +84,12 @@ namespace ns_util
             gettimeofday(&time_val, nullptr);
             return std::to_string(time_val.tv_sec);
         }
+        static std::string GetMsTime()
+        {
+            struct timeval time_val;
+            gettimeofday(&time_val,nullptr);
+            return std::to_string(time_val.tv_sec * 1000 + time_val.tv_usec * 1000);
+        }
     };
+   
 }
