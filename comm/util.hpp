@@ -34,7 +34,7 @@ namespace ns_util
         {
             return AddSuffix(file_name, ".stdin");
         }
-        static std::string Stdout(const std::string &file_name)
+        static std::string Stdcout(const std::string &file_name)
         {
             return AddSuffix(file_name, ".stdout");
         }
