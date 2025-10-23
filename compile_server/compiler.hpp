@@ -30,7 +30,7 @@ namespace ns_compiler
                 // 运行 g++ -o target src -std=c++11
                 // 编写工具类来拼接后缀
                 // 过来的记得写.c_str()符合c语言
-
+                umask(0);
                 int _stderr = open(PathUtil::Stderr(file_name).c_str(), O_CREAT | O_WRONLY, 0644);
                 if (_stderr < 0)
                 {
