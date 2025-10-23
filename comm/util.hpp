@@ -1,5 +1,8 @@
 #pragma once
 #include <iostream>
+#include <sys/stat.h>
+#include <sys/time.h>
+
 namespace ns_util
 {
     // 例如./temp/1234.cpp
@@ -17,15 +20,39 @@ namespace ns_util
 
         static std::string Src(const std::string &file_name)
         {
-            AddSuffix(file_name, ".cpp");
+            return AddSuffix(file_name, ".cpp");
         }
         static std::string Exe(const std::string &file_name)
         {
-            AddSuffix(file_name, ".exe");
+            return AddSuffix(file_name, ".exe");
         }
         static std::string Stderr(const std::string &file_name)
         {
-            AddSuffix(file_name, ".stderr");
+            return AddSuffix(file_name, ".stderr");
+        }
+    };
+
+    class FileUtil
+    {
+    public:
+        static bool IsFileExist(const std::string &path_name)
+        {
+            struct stat st;
+            if (stat(path_name.c_str(), &st) == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+    };
+    class TimeUtil
+    {
+    public:
+        static std::string GetTimeStamp()
+        {
+            struct timeval time_val;
+            gettimeofday(&time_val, nullptr);
+            return std::to_string(time_val.tv_sec);
         }
     };
 }
