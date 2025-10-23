@@ -30,6 +30,14 @@ namespace ns_util
         {
             return AddSuffix(file_name, ".stderr");
         }
+        static std::string Stdcin(const std::string &file_name)
+        {
+            return AddSuffix(file_name, ".stdin");
+        }
+        static std::string Stdout(const std::string &file_name)
+        {
+            return AddSuffix(file_name, ".stdout");
+        }
     };
 
     class FileUtil
