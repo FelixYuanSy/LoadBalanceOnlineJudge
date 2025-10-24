@@ -15,6 +15,33 @@ namespace ns_compile_run
     class CompileAndRun
     {
     public:
+        static void RemoveTempFile(const std::string &file_name)
+        {
+            // 清理文件的个数是不确定的，但是有哪些我们是知道的
+            std::string _src = PathUtil::Src(file_name);
+            if (FileUtil::IsFileExist(_src))
+                unlink(_src.c_str());
+
+            std::string _compiler_error = PathUtil::CompileError(file_name);
+            if (FileUtil::IsFileExist(_compiler_error))
+                unlink(_compiler_error.c_str());
+
+            std::string _execute = PathUtil::Exe(file_name);
+            if (FileUtil::IsFileExist(_execute))
+                unlink(_execute.c_str());
+
+            std::string _stdin = PathUtil::Stdcin(file_name);
+            if (FileUtil::IsFileExist(_stdin))
+                unlink(_stdin.c_str());
+
+            std::string _stdout = PathUtil::Stdcout(file_name);
+            if (FileUtil::IsFileExist(_stdout))
+                unlink(_stdout.c_str());
+
+            std::string _stderr = PathUtil::Stderr(file_name);
+            if (FileUtil::IsFileExist(_stderr))
+                unlink(_stderr.c_str());
+        }
         static std::string CodetoDesc(int code, const std::string &file_name)
         {
             std::string desc;
