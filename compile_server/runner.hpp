@@ -5,6 +5,8 @@
 #include "../comm/util.hpp"
 #include "../comm/log.hpp"
 #include <sys/wait.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 namespace ns_runner
 {
     using namespace ns_util;
@@ -14,8 +16,22 @@ namespace ns_runner
     public:
         Runner() {}
         ~Runner() {}
+    public:
+        static void SetProcLimit(int _cpu_limit, int _mem_limit)
+        {
+            // 设置CPU时长
+            struct rlimit cpu_rlimit;
+            cpu_rlimit.rlim_max = RLIM_INFINITY;
+            cpu_rlimit.rlim_cur = _cpu_limit;
+            setrlimit(RLIMIT_CPU, &cpu_rlimit);
 
-        static int Run(const std::string &file_name)
+            // 设置内存大小
+            struct rlimit mem_rlimit;
+            mem_rlimit.rlim_max = RLIM_INFINITY;
+            mem_rlimit.rlim_cur = _mem_limit * 1024; // 转化成为KB
+            setrlimit(RLIMIT_AS, &mem_rlimit);
+        }
+        static int Run(const std::string &file_name, int cpu_limit, int mem_limit)
         {
             // 定义变量减少书写
             std::string _execute = PathUtil::Exe(file_name);
@@ -53,13 +69,16 @@ namespace ns_runner
                 dup2(_stdin_fd, 0);
                 dup2(_stdout_fd, 1);
                 dup2(_stderr_fd, 2);
-
+                SetProcLimit(cpu_limit, mem_limit);
                 // 执行调用
                 execl(_execute.c_str(), _execute.c_str(), nullptr);
                 exit(1);
             }
             else
             {
+                close(_stdin_fd);
+                close(_stdout_fd);
+                close(_stderr_fd);
                 // 等待子进程可以获取错误并直接返回
                 int status = 0;
                 waitpid(pid, &status, 0);

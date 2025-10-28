@@ -1,10 +1,57 @@
-#include "compiler.hpp"
+#include "../comm/httplib.h"
+#include "compile_run.hpp"
 
-using namespace ns_compiler;
-int main()
+using namespace ns_compile_run;
+using namespace httplib;
+void Usage(std::string proc)
 {
-    std::string file_name = "test";
-    Compiler::Compile(file_name);
+    std::cerr << "Usage" << "\n\t" << proc << " port" << "\n";
+}
+int main(int argc, char *argv[])
+// int main()
+{
+
+    if (argc != 2)
+    {
+        Usage(argv[0]);
+        return 1;
+    }
+
+    Server srv;
+
+    srv.Post("/compile_and_run", [](const Request &req, Response &resp)
+             {
+        std::string in_json = req.body;
+        std::string out_json;
+        if(!in_json.empty())
+        {
+            CompileAndRun::Start(in_json,&out_json);
+            resp.set_content(out_json,"application/json;charset=utf-8");
+        } });
+    srv.listen("0.0.0.0", atoi(argv[1]));
+    // host 自己是0.0.0.0
+
+    // std::string file_name = "test";
+    // Compiler::Compile(file_name);
+    // std::string in_json;
+    // Json::Value in_value;
+    // // R"()", raw string
+    // in_value["code"] = R"(#include<iostream>
+    // int main(){
+    //     std::cout << "asdasdasd" << std::endl;
+    //     return 0;
+    // })";
+    // in_value["input"] = "";
+    // in_value["cpu_limit"] = 1;
+    // in_value["mem_limit"] = 10240 * 3;
+    // Json::FastWriter writer;
+    // in_json = writer.write(in_value);
+    // std::cout << in_json << std::endl;
+    // // 这个是将来给客户端返回的json串
+    // std::string out_json;
+    // CompileAndRun::Start(in_json, &out_json);
+
+    // std::cout << out_json << std::endl;
 
     return 0;
 }

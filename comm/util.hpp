@@ -3,11 +3,30 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <atomic>
+#include <fstream> // + 添加：用于 std::ofstream / std::ifstream
+#include <string>
 
 namespace ns_util
 {
     // 例如./temp/1234.cpp
     const std::string temp_path = "./temp/";
+
+    class TimeUtil
+    {
+    public:
+        static std::string GetTimeStamp()
+        {
+            struct timeval time_val;
+            gettimeofday(&time_val, nullptr);
+            return std::to_string(time_val.tv_sec);
+        }
+        static std::string GetMsTime()
+        {
+            struct timeval time_val;
+            gettimeofday(&time_val, nullptr);
+            return std::to_string(time_val.tv_sec * 1000 + time_val.tv_usec / 1000);
+        }
+    };
     class PathUtil
     {
     public:
@@ -57,7 +76,7 @@ namespace ns_util
             }
             return false;
         }
-        
+
         static std::string UniqueFile()
         {
             // 在时间工具里增加读取毫秒
@@ -95,22 +114,6 @@ namespace ns_util
             }
             in.close();
             return true;
-        }
-    };
-    class TimeUtil
-    {
-    public:
-        static std::string GetTimeStamp()
-        {
-            struct timeval time_val;
-            gettimeofday(&time_val, nullptr);
-            return std::to_string(time_val.tv_sec);
-        }
-        static std::string GetMsTime()
-        {
-            struct timeval time_val;
-            gettimeofday(&time_val, nullptr);
-            return std::to_string(time_val.tv_sec * 1000 + time_val.tv_usec * 1000);
         }
     };
 

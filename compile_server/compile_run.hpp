@@ -4,7 +4,7 @@
 #include "compiler.hpp"
 #include "runner.hpp"
 #include <jsoncpp/json/json.h>
-
+#include <signal.h>
 namespace ns_compile_run
 {
     using namespace ns_compiler;
@@ -62,16 +62,20 @@ namespace ns_compile_run
 
             case SIGABRT:
                 desc = "内存超过限制";
+                break;
 
             case SIGXCPU:
                 desc = "cpu使用超时";
+                break;
 
             case SIGFPE:
                 desc = "浮点数溢出";
+                break;
             default:
                 desc = "未知" + std::to_string(code);
                 break;
             }
+            return desc;
         }
         /*  start函数处理用户传进来的json文件
             code:用户的代码
@@ -89,7 +93,7 @@ namespace ns_compile_run
             stderr 程序错误结果
 
         */
-        static void start(const std::string &in_json, std::string *out_json)
+        static void Start(const std::string &in_json, std::string *out_json)
         {
             Json::Value in_value;
             Json::Reader reader;
@@ -113,6 +117,7 @@ namespace ns_compile_run
             if (code.size() == 0)
             {
                 status_code = -1; // 文件为空
+                goto END;
             }
 
             // 用毫秒级时间戳+原子性 来确保文件路径唯一性(写一个确保唯一性文件的工具类)
@@ -124,13 +129,13 @@ namespace ns_compile_run
                 goto END;
             }
 
-            if (!ns_compiler::Compiler::Compile(uq_name))
+            if (!Compiler::Compile(uq_name))
             {
                 status_code = -3; // 编译错误
                 goto END;
             }
 
-            run_result = ns_runner::Runner::Run(uq_name);
+            run_result = ns_runner::Runner::Run(uq_name, cpu_limit, mem_limit);
             if (run_result < 0)
             {
                 status_code = -2;
@@ -148,7 +153,6 @@ namespace ns_compile_run
         END:
             out_value["status"] = status_code;
             out_value["reason"] = CodetoDesc(status_code, uq_name);
-
             if (status_code == 0)
             {
                 std::string _stdout;
@@ -157,10 +161,12 @@ namespace ns_compile_run
 
                 std::string _stderr;
                 FileUtil::ReadFile(PathUtil::Stderr(uq_name), &_stderr, true);
-                out_value["stdout"] = _stderr;
+                out_value["stderr"] = _stderr;
             }
             Json::StyledWriter writer;
             *out_json = writer.write(out_value);
-        }
+
+            RemoveTempFile(uq_name);
+        };
     };
 }
