@@ -5,6 +5,7 @@
 #include <atomic>
 #include <fstream> // + 添加：用于 std::ofstream / std::ifstream
 #include <string>
+#include <boost/algorithm/string.hpp>
 
 namespace ns_util
 {
@@ -114,6 +115,13 @@ namespace ns_util
             }
             in.close();
             return true;
+        }
+    };
+    class StringUtil
+    {
+        static void SplitString(const std::string &src, std::vector<std::string> *target, const std::string &sep)
+        {
+            boost::split((*target), src, boost::is_any_of(sep), boost::algorithm::token_compress_on);
         }
     };
 
