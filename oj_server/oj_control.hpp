@@ -8,6 +8,7 @@
 #include <vector>
 #include <assert.h>
 #include <mutex>
+#include <jsoncpp/json/json.h>
 namespace ns_control
 {
     using namespace ns_log;
@@ -143,6 +144,7 @@ namespace ns_control
     private:
         Model _model;
         View _view;
+        LoadBalance load_blance;
 
     public:
         Control() {}
@@ -169,6 +171,28 @@ namespace ns_control
                 _view.OneExpandHtml(q, html);
             }
             return true;
+        }
+
+        void Judge(const std::string &number, const std::string in_json, const std::string *out_json)
+        {
+            //根据题目编号来获取对应题目细节
+            struct Question q;
+            _model.GetQuestion(number,&q);
+            //根据传过来的json先进行反序列化,把代码和测试代码进行结合
+            Json::Reader reader;
+            Json::Value in_value;
+            reader.parse(in_json,in_value);
+            std::string code = in_value["code"].asString();
+            Json::Value compile_value;
+            compile_value["code"] = code+q.tail;
+            compile_value["input"] = in_value["input"].asString();
+            compile_value["cpu_limit"] = q.cpu_limit;
+            compile_value["mem_limit"] = q.mem_limit;
+
+            Json::FastWriter writer;
+            std::string compile_string = writer.write(compile_value);
+
+
         }
     };
 }
