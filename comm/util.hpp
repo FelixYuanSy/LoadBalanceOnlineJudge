@@ -119,6 +119,7 @@ namespace ns_util
     };
     class StringUtil
     {
+        public:
         static void SplitString(const std::string &src, std::vector<std::string> *target, const std::string &sep)
         {
             boost::split((*target), src, boost::is_any_of(sep), boost::algorithm::token_compress_on);
