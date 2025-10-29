@@ -25,7 +25,7 @@ namespace ns_model
         std::string tail;   // 题目测试用例
     };
 
-    const std::string questions_list = "./questions/questions_list";
+    const std::string questions_list = "./questions/questions.list";
     const std::string questions_path = "./questions/";
     class Model
     {
@@ -51,6 +51,7 @@ namespace ns_model
             {
                 std::vector<std::string> tokens;
                 // 切割字符串line后存入tokens
+                StringUtil::SplitString(line,&tokens," ");
 
                 if (tokens.size() != 5)
                 {
@@ -65,7 +66,7 @@ namespace ns_model
                 q.cpu_limit = atoi(tokens[3].c_str());
                 q.mem_limit = atoi(tokens[4].c_str());
 
-                std::string path = " ./questions/";
+                std::string path = "./questions/";
                 path += q.number;
                 path += "/";
 
