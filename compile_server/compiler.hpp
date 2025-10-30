@@ -38,7 +38,7 @@ namespace ns_compiler
                     exit(1);
                 }
                 dup2(_stderr, 2);
-                execlp("g++", "g++", "-o", PathUtil::Exe(file_name).c_str(), PathUtil::Src(file_name).c_str(), "-std=c++11", nullptr);
+                execlp("g++", "g++", "-o", PathUtil::Exe(file_name).c_str(), PathUtil::Src(file_name).c_str(), "-std=c++11","-D","COMPILER_ONLINE", nullptr);
                 LOG(ERROR) << " 编译器执行失败" << "\n";
                 exit(2);
             }
