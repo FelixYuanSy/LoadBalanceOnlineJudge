@@ -1,3 +1,5 @@
+
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -6,12 +8,13 @@
 
 using namespace std;
 
-class Solution{
-    public:
-        bool isPalindrome(int x)
-        {
-            //将你的代码写在下面
-            
-            return true;
-        }
+class Solution
+{
+public:
+    bool isPalindrome(int x)
+    {
+        // 将你的代码写在下面
+
+        return true;
+    }
 };

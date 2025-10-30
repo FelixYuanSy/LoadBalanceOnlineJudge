@@ -51,7 +51,7 @@ namespace ns_model
             {
                 std::vector<std::string> tokens;
                 // 切割字符串line后存入tokens
-                StringUtil::SplitString(line,&tokens," ");
+                StringUtil::SplitString(line, &tokens, " ");
 
                 if (tokens.size() != 5)
                 {
@@ -70,9 +70,9 @@ namespace ns_model
                 path += q.number;
                 path += "/";
 
-                FileUtil::ReadFile(path + "desc.txt", &q.desc, true);
-                FileUtil::ReadFile(path + "header.cpp", &q.header, true);
-                FileUtil::ReadFile(path + "tail.cpp", &q.tail, true);
+                FileUtil::ReadFile(path + "desc.txt", &(q.desc), true);
+                FileUtil::ReadFile(path + "header.cpp", &(q.header), true);
+                FileUtil::ReadFile(path + "tail.cpp", &(q.tail), true);
 
                 questions.insert({q.number, q});
             }
