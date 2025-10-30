@@ -135,8 +135,28 @@ namespace ns_control
             mtx.unlock();
             return true;
         }
-        void OfflineMachine() {}
-        void OnlineMachine() {}
+        void OfflineMachine(int which)
+        {
+            mtx.lock();
+            for (auto id = online.begin(); id != online.end(); id++)
+            {
+                if (*id == which)
+                {
+                    online.erase(id);
+                    offline.push_back(which);
+                    break;
+                }
+            }
+            mtx.unlock();
+        }
+        void OnlineMachine()
+        {
+            // 当主机全离线,全部把他们上线
+            mtx.lock();
+            online.insert(online.end(), offline.begin(), offline.end());
+            offline.erase(offline.begin(), offline.end());
+            LOG(INFO) << "主机全部上线" << std::endl;
+        }
     };
     class Control
     {
@@ -144,7 +164,7 @@ namespace ns_control
     private:
         Model _model;
         View _view;
-        LoadBalance load_blance;
+        LoadBalance load_balance;
 
     public:
         Control() {}
@@ -173,18 +193,19 @@ namespace ns_control
             return true;
         }
 
-        void Judge(const std::string &number, const std::string in_json, const std::string *out_json)
+        void Judge(const std::string &number, const std::string in_json, std::string *out_json)
         {
-            //根据题目编号来获取对应题目细节
+            LOG(INFO) << "收到请求" << std::endl;
+            // 根据题目编号来获取对应题目细节
             struct Question q;
-            _model.GetQuestion(number,&q);
-            //根据传过来的json先进行反序列化,把代码和测试代码进行结合
+            _model.GetQuestion(number, &q);
+            // 根据传过来的json先进行反序列化,把代码和测试代码进行结合
             Json::Reader reader;
             Json::Value in_value;
-            reader.parse(in_json,in_value);
+            reader.parse(in_json, in_value);
             std::string code = in_value["code"].asString();
             Json::Value compile_value;
-            compile_value["code"] = code+q.tail;
+            compile_value["code"] = code + "\n" + q.tail;
             compile_value["input"] = in_value["input"].asString();
             compile_value["cpu_limit"] = q.cpu_limit;
             compile_value["mem_limit"] = q.mem_limit;
@@ -192,7 +213,40 @@ namespace ns_control
             Json::FastWriter writer;
             std::string compile_string = writer.write(compile_value);
 
+            // 选择负载低的机器来进行编译(一直进行选择)
+            while (true)
+            {
+                int id = 0; // 被选中机器的属性
+                Machine *m = nullptr;
 
+                if (!load_balance.SmartChoice(&id, &m))
+                {
+                    LOG(FATAL) << "暂时没有可用编译后台" << std::endl;
+                    break;
+                }
+                LOG(INFO) << "选择主机成功, 主机id: " << id << "详情" << m->ip << ":" << m->port << std::endl;
+                // 选择成功后传输数据给主机,采用cpphttplib
+                Client cli(m->ip, m->port);
+                // 传输后机器负载增加
+                m->InLoad();
+                if (auto res = cli.Post("/compile_and_run", compile_string, "application/json;charset=utf-8"))
+                {
+                    if (res->status == 200)
+                    {
+                        // 结果访问body拿回
+                        *out_json = res->body;
+                        // 完成后降低负载
+                        m->DecLoad();
+                        break;
+                    }
+                    m->DecLoad();
+                }
+                else
+                {
+                    LOG(ERROR) << "请求编译机器失败: " << m->ip << ":" << m->port << std::endl;
+                    load_balance.OfflineMachine(id);
+                }
+            }
         }
     };
 }
