@@ -17,6 +17,7 @@ int main()
 {
     Server svr;
     Control ctrl;
+    ctrl_ptr = &ctrl;
     signal(SIGQUIT, Recovery);
     // 获取所有题目列表
     svr.Get("/all_questions", [&ctrl](const Request &req, Response &resp)
