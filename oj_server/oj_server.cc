@@ -7,10 +7,17 @@
 using namespace httplib;
 using namespace ns_control;
 using namespace ns_util;
+static Control *ctrl_ptr = nullptr;
+
+void Recovery(int signo)
+{
+    ctrl_ptr->RecoveryMachine();
+}
 int main()
 {
     Server svr;
     Control ctrl;
+    signal(SIGQUIT, Recovery);
     // 获取所有题目列表
     svr.Get("/all_questions", [&ctrl](const Request &req, Response &resp)
             {   std::string html;
