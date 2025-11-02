@@ -1,13 +1,13 @@
 #pragma once
 #include "oj_control.hpp"
-#include "oj_model.hpp"
-
+// #include "oj_model.hpp"
+#include "oj_model_mysql.hpp"
 #include <vector>
 #include <ctemplate/template.h>
 
 namespace ns_view
 {
-    // using namespace ns_control;
+    using namespace ns_control;
     using namespace ns_model;
 
     std::string template_path = "./template_html/";

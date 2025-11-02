@@ -1,6 +1,7 @@
 #pragma once
 
-#include "oj_model.hpp"
+// #include "oj_model.hpp"
+#include "oj_model_mysql.hpp"
 #include "oj_view.hpp"
 #include "../comm/util.hpp"
 #include "../comm/log.hpp"
