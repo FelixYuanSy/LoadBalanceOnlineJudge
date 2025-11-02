@@ -46,6 +46,13 @@ namespace ns_control
                 mtx->unlock();
         }
 
+        void ResetLoad()
+        {
+            if(mtx) mtx->lock();
+            load = 0;
+            if(mtx) mtx->unlock();
+        }
+
         uint64_t Load()
         {
             uint64_t _load = 0;
@@ -142,6 +149,7 @@ namespace ns_control
             {
                 if (*id == which)
                 {
+                    machines[which].ResetLoad();
                     online.erase(id);
                     offline.push_back(which);
                     break;
@@ -155,6 +163,7 @@ namespace ns_control
             mtx.lock();
             online.insert(online.end(), offline.begin(), offline.end());
             offline.erase(offline.begin(), offline.end());
+            mtx.unlock();
             LOG(INFO) << "主机全部上线" << std::endl;
         }
     };
@@ -170,6 +179,11 @@ namespace ns_control
         Control() {}
         ~Control() {}
 
+         void RecoveryMachine()
+        {
+            load_balance.OnlineMachine();
+        }
+
         bool AllQuestions(std::string *html)
         {
             bool ret = true;
@@ -177,7 +191,15 @@ namespace ns_control
             if (_model.GetAllQuestions(&all))
             {
                 // 用view方法的将数据构建成网页
+                sort(all.begin(),all.end(),[](const struct Question &q1,const struct Question &q2){
+                    return atoi(q1.number.c_str()) < atoi(q2.number.c_str());
+                });
                 _view.AllExpandHtml(all, html);
+            }
+            else
+            {
+                LOG(ERROR)<<"获取题目失败" <<std::endl;
+                ret = false;
             }
             return ret;
         }
